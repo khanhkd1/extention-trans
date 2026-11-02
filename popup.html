@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <title>YouTube AI Subtitle Translator</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card: #1e293b;
+      --border: #334155;
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --primary: #3b82f6;
+      --primary-hover: #2563eb;
+      --success: #22c55e;
+      --warn: #f59e0b;
+      --danger: #ef4444;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      width: 395px;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      font-size: 13px;
+      padding: 14px;
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .header-title {
+      font-size: 15px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .badge-ver {
+      font-size: 11px;
+      background: rgba(59, 130, 246, 0.2);
+      color: #93c5fd;
+      padding: 2px 8px;
+      border-radius: 99px;
+      border: 1px solid rgba(59, 130, 246, 0.4);
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 11px 12px;
+      margin-bottom: 10px;
+    }
+
+    .card-title {
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      color: var(--muted);
+      margin-bottom: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .status-line {
+      font-size: 13px;
+      font-weight: 500;
+      color: #e2e8f0;
+      margin-bottom: 6px;
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 6px;
+      background: #0f172a;
+      border-radius: 99px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #3b82f6, #06b6d4);
+      width: 0%;
+      transition: width 0.25s ease;
+    }
+
+    .key-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .key-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(15, 23, 42, 0.65);
+      padding: 6px 9px;
+      border-radius: 7px;
+      border: 1px solid rgba(51, 65, 85, 0.7);
+      font-size: 12px;
+    }
+
+    .key-empty {
+      color: var(--muted);
+      font-size: 12px;
+      text-align: center;
+      padding: 8px;
+      background: rgba(15, 23, 42, 0.45);
+      border-radius: 7px;
+      border: 1px dashed var(--border);
+    }
+
+    .key-left {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--success);
+    }
+
+    .dot.cooldown { background: var(--warn); }
+    .dot.error { background: var(--danger); }
+
+    .key-code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      color: #cbd5e1;
+      font-size: 11.5px;
+    }
+
+    .key-stats {
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .form-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+      gap: 8px;
+    }
+
+    .form-row:last-child {
+      margin-bottom: 0;
+    }
+
+    label {
+      color: #cbd5e1;
+      font-size: 12.5px;
+    }
+
+    select, input[type="number"], textarea {
+      background: #0f172a;
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 5px 8px;
+      font-size: 12.5px;
+      outline: none;
+    }
+
+    select:focus, input:focus, textarea:focus {
+      border-color: var(--primary);
+    }
+
+    textarea {
+      width: 100%;
+      height: 76px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 11.5px;
+      resize: vertical;
+      line-height: 1.45;
+      margin-top: 5px;
+    }
+
+    textarea::placeholder {
+      color: #64748b;
+    }
+
+    .key-guide {
+      margin-top: 7px;
+      padding: 8px 10px;
+      border-radius: 7px;
+      background: rgba(59, 130, 246, 0.1);
+      border: 1px solid rgba(59, 130, 246, 0.28);
+      font-size: 11.5px;
+      line-height: 1.45;
+      color: #cbd5e1;
+    }
+
+    .key-guide a {
+      color: #60a5fa;
+      font-weight: 600;
+      text-decoration: none;
+    }
+
+    .key-guide a:hover {
+      text-decoration: underline;
+    }
+
+    .btn-row {
+      display: flex;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    button {
+      flex: 1;
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 7px;
+      padding: 7px 10px;
+      font-size: 12.5px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s ease;
+    }
+
+    button:hover {
+      background: var(--primary-hover);
+    }
+
+    button.secondary {
+      background: #334155;
+      color: #e2e8f0;
+    }
+
+    button.secondary:hover {
+      background: #475569;
+    }
+
+    .toast {
+      margin-top: 8px;
+      font-size: 12px;
+      text-align: center;
+      color: #4ade80;
+      min-height: 16px;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="header-title">
+      <span>🎬 YouTube AI Translator</span>
+    </div>
+    <span class="badge-ver">Key Rotator</span>
+  </div>
+
+  <!-- Trạng thái Video đang xem -->
+  <div class="card">
+    <div class="card-title">
+      <span>Trạng thái Video hiện tại</span>
+      <span id="cueCounter">0/0 câu</span>
+    </div>
+    <div class="status-line" id="videoStatusText">Mở video YouTube để tự động dịch...</div>
+    <div id="videoTopicLine" style="font-size: 11.5px; color: #93c5fd; margin-bottom: 6px; display: none;"></div>
+    <div class="progress-bar">
+      <div class="progress-fill" id="progressFill"></div>
+    </div>
+    <div class="btn-row">
+      <button class="secondary" id="btnRetranslate">↻ Dịch lại Video này</button>
+      <button class="secondary" id="btnClearAllCache">🗑 Xoá Cache</button>
+    </div>
+  </div>
+
+  <!-- Trạng thái Xoay vòng Gemini Keys -->
+  <div class="card">
+    <div class="card-title">
+      <span>Trạng thái Xoay vòng Gemini Keys</span>
+      <button id="btnTestKeys" class="secondary" style="flex:0; padding:3px 9px; font-size:11px; white-space:nowrap;">Kiểm tra Keys</button>
+    </div>
+    <div class="key-list" id="keyStatsList"></div>
+  </div>
+
+  <!-- Tuỳ chỉnh Hiển thị & Model -->
+  <div class="card">
+    <div class="card-title">Cấu hình Hiển thị & AI Model</div>
+    <div class="form-row">
+      <label for="displayMode">Chế độ phụ đề:</label>
+      <select id="displayMode">
+        <option value="bilingual">Song ngữ (Việt + Anh)</option>
+        <option value="vi-only">Chỉ Tiếng Việt</option>
+        <option value="off">Tắt phụ đề AI</option>
+      </select>
+    </div>
+    <div class="form-row">
+      <label for="modelSelect">Model Gemini:</label>
+      <select id="modelSelect">
+        <option value="gemini-3.5-flash-lite">gemini-3.5-flash-lite (Siêu tốc ~1.3s)</option>
+        <option value="gemini-flash-lite-latest">gemini-flash-lite-latest (Ổn định)</option>
+        <option value="gemini-3.8-flash">gemini-3.8-flash (Chất lượng cao)</option>
+      </select>
+    </div>
+    <div class="form-row">
+      <label for="fontSize">Cỡ chữ Tiếng Việt (px):</label>
+      <input type="number" id="fontSize" min="14" max="36" step="1" value="20" style="width: 70px;" />
+    </div>
+    <div style="margin-top: 8px;">
+      <label for="apiKeysInput">Danh sách Gemini API Keys (mỗi dòng 1 key):</label>
+      <textarea
+        id="apiKeysInput"
+        spellcheck="false"
+        placeholder="Dán Gemini API Key vào đây (mỗi dòng 1 key)...&#10;Nên nhập 2 - 3 keys để tự động xoay vòng."
+      ></textarea>
+      <div class="key-guide">
+        💡 <strong>Cách lấy API Key miễn phí:</strong> Truy cập
+        <a href="https://aistudio.google.com/api-keys" target="_blank" rel="noopener noreferrer">
+          aistudio.google.com/api-keys ↗
+        </a>
+        ➔ Bấm <strong>"Create API key"</strong> ➔ Copy và dán vào ô trên (mỗi dòng 1 key để xoay vòng tải).
+      </div>
+    </div>
+    <div class="btn-row">
+      <button id="btnSaveSettings">💾 Lưu Cấu hình</button>
+    </div>
+    <div class="toast" id="toastMsg"></div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
